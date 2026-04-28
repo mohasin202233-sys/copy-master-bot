@@ -6,7 +6,7 @@ import sqlite3
 from datetime import datetime, timedelta
 from telebot import types
 
-# --- Flask Server (বটকে ২৪ ঘণ্টা লাইভ রাখার জন্য) ---
+# --- Flask Server (Render-এ বট ২৪ ঘণ্টা সচল রাখার জন্য) ---
 app = Flask('')
 
 @app.route('/')
@@ -20,7 +20,7 @@ def keep_alive():
     t = Thread(target=run)
     t.start()
 
-# --- আপনার বটের তথ্য ---
+# --- আপনার বটের মূল তথ্য ---
 API_TOKEN = '8770587499:AAE9WrB_G0Ugz2dyNkL8bSPyWCiIXq27uoM'
 ADMIN_ID = 8155493482 
 MY_WALLET = "0x22b4907dc3bc250e92ffa402c47f2776faaadf64"
@@ -47,10 +47,10 @@ def start(message):
         "👋 **আসসালামু আলাইকুম!**\n\n"
         "📜 **বটের নিয়মাবলী ও শর্তাবলী:**\n"
         "১. 💵 **ডিপোজিট:** সর্বনিম্ন ১০$ (USDT-BEP20) ইনভেস্ট করতে পারবেন।\n"
-        "২. ⏳ **সময়সীমা:** আপনার ডলার ৩০ দিনের জন্য লক থাকবে।\n"
+        "২. ⏳ **সময়সীমা:** আপনার ইনভেস্ট করা ডলার ৩০ দিনের জন্য লক থাকবে।\n"
         "৩. 📈 **প্রফিট:** মাস শেষে মূল লভ্যাংশের ৭৫% আপনার ব্যালেন্সে যোগ হবে।\n"
-        "৪. ✅ **ভেরিফিকেশন:** সঠিক TxID বা স্ক্রিনশট দিতে হবে।\n"
-        "৫. 🎁 **রেফার বোনাস:** প্রতি জন রেফারেল ইনভেস্টমেন্টে ৫.০$ বোনাস।\n\n"
+        "৪. ✅ **ভেরিফিকেশন:** পেমেন্ট করার পর সঠিক TxID অথবা স্ক্রিনশট দিতে হবে।\n"
+        "৫. 🎁 **বোনাস:** রেফারেল ইনভেস্টমেন্টের ওপর আকর্ষণীয় বোনাস পাওয়ার সুযোগ রয়েছে।\n\n"
         f"🆔 **আপনার আইডি:** `{message.chat.id}`"
     )
     bot.send_message(message.chat.id, full_rules, reply_markup=main_menu(), parse_mode="Markdown")
@@ -72,17 +72,23 @@ def check_balance(message):
 @bot.message_handler(func=lambda m: True, content_types=['text', 'photo'])
 def handle_all(message):
     if message.text == '💰 Deposit':
-        bot.send_message(message.chat.id, f"💰 **ডিপোজিট করার নিয়ম:**\n\nনিচের অ্যাড্রেসে USDT (BEP20) পাঠান:\n`{MY_WALLET}`\n\nপাঠানোর পর আপনার TxID অথবা পেমেন্টের স্ক্রিনশট এখানে পাঠান।", parse_mode="Markdown")
+        dep_msg = (
+            "💰 **ডিপোজিট করার নিয়ম:**\n\n"
+            "নিচের অ্যাড্রেসে USDT (BEP20) পাঠান:\n"
+            f"`{MY_WALLET}`\n\n"
+            "পাঠানোর পর আপনার **TxID** অথবা পেমেন্টের **স্ক্রিনশট** এখানে পাঠান।"
+        )
+        bot.send_message(message.chat.id, dep_msg, parse_mode="Markdown")
     elif message.text == '💳 Withdraw':
-        bot.send_message(message.chat.id, "⚠️ উইথড্র করার জন্য আপনার প্রফিট অন্তত ১০$ হতে হবে। বর্তমানে আপনার উইথড্র রিকোয়েস্ট প্রসেস করা সম্ভব নয়।")
+        bot.send_message(message.chat.id, "⚠️ উইথড্র করার জন্য আপনার প্রফিট অন্তত ১০$ হতে হবে। বর্তমানে আপনার ব্যালেন্স পর্যাপ্ত নয়।")
     elif message.chat.id != ADMIN_ID:
-        # ইউজার যদি কোনো স্ক্রিনশট বা TxID পাঠায় তা অ্যাডমিনের কাছে যাবে
+        # ইউজার কিছু পাঠালে সেটা অ্যাডমিনের কাছে যাবে
         bot.forward_message(ADMIN_ID, message.chat.id, message.message_id)
-        bot.reply_to(message, "⏳ আপনার তথ্য অ্যাডমিনের কাছে পাঠানো হয়েছে। ভেরিফাই হতে কিছুটা সময় লাগতে পারে। ধন্যবাদ।")
+        bot.reply_to(message, "⏳ আপনার তথ্য অ্যাডমিনের কাছে পাঠানো হয়েছে। ভেরিফাই হতে কিছুক্ষণ সময় লাগতে পারে।")
 
-# --- রান করার মেইন পার্ট ---
+# --- রান করার অংশ ---
 if __name__ == "__main__":
     init_db()
     keep_alive() 
-    print("বট সফলভাবে চালু হয়েছে...")
+    print("Bot is starting...")
     bot.infinity_polling()
